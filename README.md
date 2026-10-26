@@ -1,6 +1,6 @@
 # Умный кредитный кабинет
 
-Единое приложение: наш адаптивный интерфейс Альфа-Бизнеса (React 19 + TypeScript + Vite + Alfa Core DS) и FastAPI из `credit-conveyor/backend`. Второй frontend удалён. PostgreSQL, миграции Alembic, Redis и локальные моки сохранены.
+Единое приложение: наш адаптивный интерфейс Альфа-Бизнеса (React 19 + TypeScript + Vite + Alfa Core DS) и FastAPI из `credit-conveyor/backend`. PostgreSQL, миграции Alembic, Redis и локальные моки сохранены.
 
 ## Требования к окружению
 
