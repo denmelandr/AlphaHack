@@ -2,7 +2,21 @@
 
 Единое приложение: наш адаптивный интерфейс Альфа-Бизнеса (React 19 + TypeScript + Vite + Alfa Core DS) и FastAPI из `credit-conveyor/backend`. Второй frontend удалён. PostgreSQL, миграции Alembic, Redis и локальные моки сохранены.
 
+## Требования к окружению
+
+- Docker Engine / Docker Desktop с Linux-контейнерами и Docker Compose **2.20+** (вложенный Compose использует `include`).
+- Linux, macOS или Windows с WSL2. Рекомендуемый бюджет для демо: 4 CPU, 8 ГБ RAM и 5 ГБ свободного диска; это рекомендация, минимальная конфигурация отдельно не измерялась.
+- Свободные порты: 5173, 8080, 8001, 5432, 6379. Интернет нужен для первой загрузки образов и зависимостей. Swagger по умолчанию загружает UI-ресурсы с CDN.
+- Для разработки вне Docker: Node.js 22.6+ с поддержкой `--experimental-strip-types`, pnpm 10.11.0; Python 3.12 для backend. GPU для стандартного демо не нужен.
+
 ## Запуск одной командой
+
+Получить проект и перейти в корень:
+
+```sh
+git clone https://github.com/denmelandr/AlphaHack.git
+cd AlphaHack
+```
 
 Из этой папки:
 
@@ -16,6 +30,26 @@ docker compose up --build -d
 - Моки источников: http://localhost:8001/docs
 
 Сервисы публикуются только на localhost. Именованные тома `pgdata` и `uploads` сохраняют БД и файлы после перезапуска. Миграции и идемпотентный seed выполняются при запуске backend. Подписание, выдача, автопилот и все финансовые операции — синтетическая модель. Реальные деньги и сообщения не отправляются.
+
+## Конфигурация
+
+Для стандартного синтетического демо `.env` не обязателен. Для настройки скопируйте `.env.example` в `.env` **в корне проекта**. После изменений пересоздайте контейнеры командой запуска.
+
+| Переменная | По умолчанию | Назначение |
+|---|---|---|
+| `POSTGRES_USER` | `conveyor` | Пользователь БД |
+| `POSTGRES_PASSWORD` | `conveyor` | Пароль локальной демо-БД |
+| `POSTGRES_DB` | `conveyor` | Имя БД |
+| `JWT_SECRET` | `dev-secret-change-me` | Ключ подписи JWT; заменить при публикации |
+| `BANK_INVITATION_CODE` | пусто | Регистрация банковских сотрудников закрыта, пока код не задан |
+| `LLM_ENABLED` | `false` | Использовать Ollama для текстов копилота |
+| `LLM_MODEL` | `qwen2.5:7b-instruct` | Модель Ollama при включённом LLM |
+
+`DATABASE_URL`, `REDIS_URL`, `INTEGRATIONS_URL`, `CORS_ORIGINS` и `OLLAMA_URL` задаются внутри `compose.yaml`; простое добавление их в корневой `.env` не переопределяет эти строки. `VITE_API_URL` используется только при сборке/разработке frontend; стандартный путь — `/api` через nginx.
+
+### Опциональная LLM
+
+В `compose.yaml` есть закомментированный пример сервиса Ollama. Чтобы включить его, раскомментируйте сервис и добавьте объявление `ollamadata:` в раздел `volumes`, запустите Ollama и загрузите модель: `docker compose exec ollama ollama pull qwen2.5:7b-instruct`. Затем задайте `LLM_ENABLED=true` в корневом `.env` и пересоздайте backend. Память и скорость зависят от модели и оборудования; этот режим не входит в обязательный запуск демо. При недоступности модели копилот возвращается к шаблонам.
 
 ## Демо-доступ
 
@@ -78,3 +112,34 @@ docker compose exec -T backend python -m pytest -q
 - `credit-conveyor/docs/` — исходные архитектура, сценарии, Postman и спецификация. `docs/openapi.json` — актуальный контракт интегрированной сборки.
 
 1С / Эльба и Ozon / WB не являются подключёнными источниками этого backend. Их отсутствие явно отмечено в профиле. Метрики просрочки/дохода — модельные оценки, а не измеренная статистика реального банка. Для реальных документов потребуются антивирус, объектное хранилище и политика доступа/хранения.
+
+
+## Материалы для проверки и сдачи
+
+| Материал | Файл / адрес |
+|---|---|
+| Архитектура, состояния заявки и ERD | [docs/architecture.md](docs/architecture.md) |
+| API и авторизация в Swagger | [docs/api.md](docs/api.md), http://localhost:8080/docs |
+| ReDoc / живая схема | http://localhost:8080/redoc / http://localhost:8080/openapi.json |
+| Снимок OpenAPI | [docs/openapi.json](docs/openapi.json) |
+| Коллекция Postman | [docs/postman_collection.json](docs/postman_collection.json) |
+| Тестовые сценарии | [docs/test-scenarios.md](docs/test-scenarios.md) |
+| Демо за 7–10 минут | [docs/demo.md](docs/demo.md) |
+| Синтетические данные | [описание seed](credit-conveyor/docs/SYNTHETIC_DATA.md) |
+| Ограничения безопасности | [SECURITY.md](credit-conveyor/docs/SECURITY.md) |
+| Компоненты, модели, лицензии и моки | [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) |
+| Чек-лист сдачи | [SUBMISSION.md](SUBMISSION.md) |
+
+Быстрая проверка после запуска: `bash scripts/verify_submission.sh`. Проверка контракта и коллекции: `python3 scripts/check_contract.py`. Полный прогон коллекции создаёт одну синтетическую заявку: `python3 scripts/run_collection.py`. Эти скрипты используют стандартную библиотеку Python и не требуют Newman. Postman также может импортировать коллекцию напрямую.
+
+Frontend unit-тесты покрывают расчёты и отдельные функции, API-тесты — серверные сценарии. Автоматического браузерного E2E-набора пока нет; ручной сценарий описан отдельно. GitHub Actions запускает сборку и тесты из корня репозитория.
+
+## Остановка и сохранность данных
+
+`docker compose down` останавливает приложение и сохраняет тома. Для полного сброса **с удалением всех демо-заявок и загруженных файлов**: `docker compose down -v`, затем повторный запуск. Идемпотентный seed при обычном рестарте не сбрасывает пользовательские действия.
+
+## Версия
+
+Репозиторий: https://github.com/denmelandr/AlphaHack. Точную сдаваемую ревизию определяйте через `git rev-parse HEAD`; версия продукта — [VERSION](VERSION). Для дедлайна укажите hash проверенного коммита или создайте отдельный release tag после финальной проверки. Доступ жюри к приватному репозиторию настраивается владельцем в GitHub.
+
+Исторические проектные материалы (`docs/BACKEND_CODEX_PROMPT.md`, `docs/innovation-contract.md`, старые скриншоты) сохранены для контекста. Текущие возможности определяют этот README, актуальная архитектура, OpenAPI и `docs/integration-matrix.md`.

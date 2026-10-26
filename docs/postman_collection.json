@@ -1,0 +1,791 @@
+{
+  "info": {
+    "name": "Умный кредитный кабинет — интегрированная сборка",
+    "description": "Запускать из корня после docker compose up. Создаёт синтетическую заявку с метаданными трёх документов; не применяет финансовые действия и не активирует политики. Модельные файлы не содержат PDF.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "bank_token",
+      "value": ""
+    },
+    {
+      "key": "product_id",
+      "value": ""
+    },
+    {
+      "key": "app_id",
+      "value": ""
+    },
+    {
+      "key": "servicing_id",
+      "value": ""
+    },
+    {
+      "key": "policy_yaml",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01. Демо: вход",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"demo@alfa.ru\", \"password\": \"demo123\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('token', pm.response.json().access_token);"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {
+          "token": "access_token"
+        }
+      }
+    },
+    {
+      "name": "02. Профиль и роль",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/auth/me"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {}
+      }
+    },
+    {
+      "name": "03. Каталог продуктов",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/products"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('product_id', pm.response.json()[0].id);"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {
+          "product_id": "0.id"
+        }
+      }
+    },
+    {
+      "name": "04. Подбор продукта",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/recommend",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"answers\": {\"goal\": \"oborotka\", \"repay\": \"fixed\"}}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {}
+      }
+    },
+    {
+      "name": "05. Калькулятор",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/calc",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"amount\": 500000, \"annual_rate\": 22, \"term_months\": 12, \"expected_extra_profit\": 60000}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {}
+      }
+    },
+    {
+      "name": "06. Создать синтетический черновик",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/applications",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"product_id\": \"{{product_id}}\", \"amount\": 500000, \"term_months\": 12, \"purpose\": \"Проверка API-коллекции\", \"form_data\": {\"wizard_step\": 0}}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('app_id', pm.response.json().id);"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 201,
+        "extract": {
+          "app_id": "id"
+        }
+      }
+    },
+    {
+      "name": "07. Метаданные: passport",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/applications/{{app_id}}/documents",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"doc_type\": \"passport\", \"filename\": \"passport.pdf\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {}
+      }
+    },
+    {
+      "name": "08. Метаданные: financials",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/applications/{{app_id}}/documents",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"doc_type\": \"financials\", \"filename\": \"financials.pdf\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {}
+      }
+    },
+    {
+      "name": "09. Метаданные: bank_statements",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/applications/{{app_id}}/documents",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"doc_type\": \"bank_statements\", \"filename\": \"bank_statements.pdf\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {}
+      }
+    },
+    {
+      "name": "10. Готовность заявки",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/applications/{{app_id}}/readiness"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {}
+      }
+    },
+    {
+      "name": "11. Отправить заявку",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/applications/{{app_id}}/submit"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {}
+      }
+    },
+    {
+      "name": "12. Заявка, решение и события",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/applications/{{app_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {}
+      }
+    },
+    {
+      "name": "13. Конструктор условий",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/applications/{{app_id}}/simulate",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"amount\": 400000, \"term_months\": 18, \"collateral_offered\": false, \"guarantor_offered\": true}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {}
+      }
+    },
+    {
+      "name": "14. Банк: вход андеррайтера",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"underwriter@bank.ru\", \"password\": \"bank123\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('bank_token', pm.response.json().access_token);"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {
+          "bank_token": "access_token"
+        }
+      }
+    },
+    {
+      "name": "15. Копилот",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{bank_token}}"
+          }
+        ],
+        "url": "{{base_url}}/applications/{{app_id}}/copilot"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {}
+      }
+    },
+    {
+      "name": "16. Активная политика",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{bank_token}}"
+          }
+        ],
+        "url": "{{base_url}}/policies/active"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('policy_yaml', pm.response.json().yaml_text);"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {
+          "policy_yaml": "yaml_text"
+        }
+      }
+    },
+    {
+      "name": "17. Shadow-симуляция без активации",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{bank_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/policies/simulate",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"yaml_text\": \"{{policy_yaml}}\", \"limit\": 50}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = {yaml_text: pm.collectionVariables.get('policy_yaml'), limit: 50};",
+              "pm.request.body.update(JSON.stringify(body));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {}
+      }
+    },
+    {
+      "name": "18. Выбрать выданный seed-кредит",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/applications"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('servicing_id', pm.response.json().find(a => a.state === 'SERVICING' || a.state === 'DISBURSED').id);"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {
+          "servicing_id": "first_servicing_id"
+        }
+      }
+    },
+    {
+      "name": "19. Радар и варианты действий",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/applications/{{servicing_id}}/servicing"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {}
+      }
+    },
+    {
+      "name": "20. Стресс-прогноз без применения",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/applications/{{servicing_id}}/servicing/forecast",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"revenue_drop_pct\": 25, \"extra_expense\": 100000}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {}
+      }
+    },
+    {
+      "name": "21. Персональные предложения",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/applications/{{servicing_id}}/offers"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {}
+      }
+    },
+    {
+      "name": "22. Портфель ранних предупреждений",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{bank_token}}"
+          }
+        ],
+        "url": "{{base_url}}/portfolio/early-warnings"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {}
+      }
+    },
+    {
+      "name": "23. Метрики эффекта",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{bank_token}}"
+          }
+        ],
+        "url": "{{base_url}}/portfolio/metrics"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "x-alpha": {
+        "status": 200,
+        "extract": {}
+      }
+    }
+  ]
+}
