@@ -1,0 +1,134 @@
+/* Company selection is a plain toolbar, without a callout card. */
+.innovation-hub .lab-case-selector {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 8px 0;
+}
+.innovation-hub .lab-case-icon { background: transparent; }
+.innovation-hub .lab-demo-badge { background: transparent; padding-inline: 0; color: #866444; }
+
+/* A shared readable type scale for the mobile cabinet and authentication. */
+@media (max-width: 760px) {
+  body { font-size: 16px; }
+  .page-heading h1 { font-size: 30px; line-height: 1.2; }
+  .page-heading p, .hero p, .muted, .action-card > p,
+  .innovation-hub .lab-decision-hero p, .innovation-hub .lab-policy-intro p,
+  .innovation-hub .lab-copilot-hero p, .innovation-hub .lab-team-hero p,
+  .innovation-hub .lab-live-limit p, .innovation-hub .lab-care-alert p {
+    font-size: 16px; line-height: 1.65;
+  }
+  .eyebrow, .nav-label, .hero-tag, .pill, .pill.neutral,
+  .main-footer, .sidebar-footer, .secure, .account-role-badge,
+  .innovation-hub .lab-kicker, .innovation-hub .lab-environment,
+  .innovation-hub .lab-context-bar > span, .innovation-hub .lab-bottom-caption,
+  .innovation-hub .lab-case-selector > div > span,
+  .innovation-hub .lab-demo-badge, .innovation-hub .lab-tag {
+    font-size: 12px; line-height: 1.6;
+  }
+  .button, .button.small, .button.dark, .form-footer .button,
+  .document-row .button, .text-button, .dropdown-item,
+  .innovation-hub .alfa-action.alfa-action, .innovation-hub .lab-inline-link,
+  .innovation-hub .lab-mini-tabs button, .innovation-hub .lab-care-menu > button {
+    font-size: 16px; line-height: 1.45; min-height: 44px;
+  }
+  .form-field, .purpose-label, .delay-row, .input-box > span,
+  .field-description, .payment-label, .doc-info strong,
+  .journey strong, .concept-overview strong, .survey-options strong,
+  .innovation-hub .lab-slider-label > span, .innovation-hub .lab-switch-row strong,
+  .innovation-hub .lab-factor-list strong, .innovation-hub .lab-factor-list > div > div:first-child > span,
+  .innovation-hub .lab-metric > div, .innovation-hub .lab-quote span,
+  .innovation-hub .lab-panel-heading p, .innovation-hub .lab-review-strip p,
+  .innovation-hub .lab-connectors p, .innovation-hub .lab-care-menu > p,
+  .innovation-hub .lab-events > div, .innovation-hub .lab-feedback,
+  .innovation-hub .lab-facts-list span, .innovation-hub .lab-anomaly strong,
+  .innovation-hub .lab-team-tasks strong, .innovation-hub .lab-team-person strong {
+    font-size: 15px; line-height: 1.6;
+  }
+  .form-field input, .form-field select, .form-field textarea,
+  .purpose-label select, .delay-row select,
+  .innovation-hub .lab-case-selector select, .innovation-hub .lab-copilot-editor,
+  .auth-field input { font-size: 16px; line-height: 1.5; }
+  .helper, .range-captions, .cost-lines > div, .cost-lines strong,
+  .comparison > div:not(.chart-track), .comparison strong,
+  .benefit-box > div, .benefit-box p, .chart-legend,
+  .cashflow strong, .cashflow p, .result-disclaimer, .ui-scenario-description,
+  .save-status, .stepper small, .doc-info p, .doc-info small,
+  .review-list > div, .readiness > div, .readiness p, .consent,
+  .timeline p, .timeline-time, .info-banner p, .document-guide-button,
+  .concept-overview p, .survey-options small, .survey-benefits ul,
+  .integration-notice strong, .integration-notice p, .integration-feedback,
+  .bank-status-placeholder .review-list > div, .bank-status-placeholder > .muted,
+  .application-survey-invite p, .missing-documents > p, .missing-documents > button,
+  .guide-steps p, .guide-checks p, .cashflow-assessment p,
+  .repayment-stats span, .repayment-bank .review-list > div,
+  .product-reason, .fit-summary span,
+  .innovation-hub .lab-note p, .innovation-hub .lab-early-signal p,
+  .innovation-hub .lab-connection-status, .innovation-hub .lab-chart-scrubber,
+  .innovation-hub .lab-section-heading p, .innovation-hub .lab-slider-label small,
+  .innovation-hub .lab-switch-row small, .innovation-hub .lab-metric > small,
+  .innovation-hub .lab-hero-chips span, .innovation-hub .lab-panel-heading > span:not(.lab-tag),
+  .innovation-hub .lab-offer p, .innovation-hub .lab-offer > span,
+  .innovation-hub .lab-version-row small, .innovation-hub .lab-audit-row strong,
+  .innovation-hub .lab-audit-row small, .innovation-hub .lab-team-tasks p,
+  .innovation-hub .lab-team-person small, .innovation-hub .lab-facts-list small,
+  .innovation-hub .lab-anomaly p, .innovation-hub .lab-review-queue p,
+  .innovation-hub .lab-review-queue small, .innovation-hub .lab-care-apply > div,
+  .innovation-hub .lab-policy-legend, .innovation-hub .lab-simulation-details,
+  .lab-launchpad p, .lab-launchpad button {
+    font-size: 14px; line-height: 1.65;
+  }
+  .innovation-hub .lab-disclaimer { font-size: 14px !important; line-height: 1.65 !important; }
+  .innovation-hub .lab-chart-axis, .innovation-hub .lab-revenue-bars small,
+  .innovation-hub .lab-revenue-bars strong, .innovation-hub .lab-rule-checks span,
+  .innovation-hub .lab-offer > strong small, .innovation-hub .lab-offer-number {
+    font-size: 12px; line-height: 1.6;
+  }
+  .innovation-hub h3, .innovation-hub .lab-connectors h3,
+  .innovation-hub .lab-care-menu h3 { font-size: 19px; line-height: 1.4; }
+  .innovation-hub .lab-early-signal strong { font-size: 16px; line-height: 1.5; }
+  .innovation-hub .lab-metrics-grid,
+  .innovation-hub .lab-metrics-grid:has(> :nth-child(4)) { grid-template-columns: 1fr; }
+  .innovation-hub .lab-metric { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 20px; }
+  .innovation-hub .lab-metric > div { max-width: 100%; flex: 1 1 140px; }
+  .innovation-hub .lab-metric > strong { font-size: 27px; margin: 0; line-height: 1.2; }
+  .innovation-hub .lab-metric > small { width: 100%; margin: 0; }
+  .innovation-hub .lab-case-selector { gap: 8px; flex-wrap: wrap; }
+  .innovation-hub .lab-case-selector > div { flex: 1 1 200px; }
+  .innovation-hub .lab-case-icon { width: 28px; }
+  .innovation-hub .lab-case-selector > div > span { letter-spacing: .6px; }
+  .innovation-hub .lab-score { width: 96px; height: 96px; }
+  .innovation-hub .lab-score span { font-size: 10px; }
+  .innovation-hub .lab-quote { flex-wrap: wrap; }
+  .innovation-hub .lab-connectors { grid-template-columns: 1fr; }
+  .innovation-hub .lab-connectors p { min-height: 0; }
+  .innovation-hub .lab-code { font-size: 14px; line-height: 1.7; }
+  .innovation-hub .lab-queue-table td { font-size: 15px; }
+  .innovation-hub .lab-queue-table strong { font-size: 16px; }
+  .innovation-hub .lab-queue-table small, .innovation-hub .lab-queue-table th { font-size: 12px; }
+  .innovation-hub .lab-revenue-bars { flex-wrap: wrap; gap: 16px; }
+  .innovation-hub .lab-revenue-bars > div { flex-basis: 25%; }
+  .segmented .ui-scenario-trigger { font-size: 14px; line-height: 1.4; min-height: 44px; letter-spacing: 0; }
+  .ui-tooltip { font-size: 14px; }
+  .auth-lead, .auth-role-options strong { font-size: 16px; line-height: 1.6; }
+  .auth-role-options small, .auth-field, .auth-role-options legend,
+  .auth-invite details, .auth-invite details p, .auth-error { font-size: 14px; line-height: 1.6; }
+  .auth-storage-note p, .auth-demo { font-size: 12px; line-height: 1.65; }
+  .auth-mode > button, .auth-submit { font-size: 16px; min-height: 44px; }
+  .auth-role-options > label { padding: 16px 12px; }
+}
+@media (max-width: 420px) {
+  .innovation-hub .lab-decision-hero { flex-wrap: wrap; }
+  .innovation-hub .lab-score { margin-top: 0; }
+  .ui-scenario-tabs { display: grid; grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .innovation-hub .lab-metric { display: grid; grid-template-columns: 1fr; }
+  .innovation-hub .lab-metric > div { justify-content: flex-start; color: #707987; }
+  .innovation-hub .lab-metric > small { color: #78818e; }
+  .innovation-hub .lab-metric > strong { font-size: 28px; }
+  .innovation-hub .lab-case-selector { flex-wrap: nowrap; }
+  .innovation-hub .lab-case-selector > div { flex: 1; min-width: 0; }
+  .innovation-hub .lab-case-selector > .lab-demo-badge { display: none; }
+}
