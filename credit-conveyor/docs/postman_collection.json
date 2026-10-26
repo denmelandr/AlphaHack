@@ -1,0 +1,164 @@
+{
+  "info": {
+    "name": "Умный кредитный кабинет",
+    "description": "Сквозной сценарий: клиент подаёт заявку, конвейер принимает решение, банк управляет политикой, сопровождение после выдачи.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080" },
+    { "key": "token", "value": "" },
+    { "key": "bank_token", "value": "" },
+    { "key": "app_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Клиент: вход",
+      "event": [
+        { "listen": "test", "script": { "exec": [
+          "pm.collectionVariables.set('token', pm.response.json().access_token);"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{base_url}}/auth/login",
+        "body": { "mode": "raw", "raw": "{\"email\":\"client@demo.ru\",\"password\":\"client123\"}" }
+      }
+    },
+    {
+      "name": "2. Продукты",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{base_url}}/products" }
+    },
+    {
+      "name": "3. Подбор продукта",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "url": "{{base_url}}/recommend",
+        "body": { "mode": "raw", "raw": "{\"answers\":{\"goal\":\"oborotka\",\"repay\":\"fixed\"}}" }
+      }
+    },
+    {
+      "name": "4. Калькулятор",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "url": "{{base_url}}/calc",
+        "body": { "mode": "raw", "raw": "{\"amount\":1500000,\"annual_rate\":22,\"term_months\":18,\"expected_extra_profit\":300000}" }
+      }
+    },
+    {
+      "name": "5. Создать заявку",
+      "event": [
+        { "listen": "test", "script": { "exec": [
+          "pm.collectionVariables.set('app_id', pm.response.json().id);"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "url": "{{base_url}}/applications",
+        "body": { "mode": "raw", "raw": "{\"product_id\":1,\"amount\":1500000,\"term_months\":18,\"purpose\":\"реклама\"}" }
+      }
+    },
+    {
+      "name": "6. Загрузить документ (паспорт)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "url": "{{base_url}}/applications/{{app_id}}/documents",
+        "body": { "mode": "raw", "raw": "{\"doc_type\":\"passport\",\"filename\":\"passport.pdf\"}" }
+      }
+    },
+    {
+      "name": "7. Готовность заявки",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{base_url}}/applications/{{app_id}}/readiness" }
+    },
+    {
+      "name": "8. Отправить заявку",
+      "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{base_url}}/applications/{{app_id}}/submit" }
+    },
+    {
+      "name": "9. Заявка целиком (скоринг, решение, оффер)",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{base_url}}/applications/{{app_id}}" }
+    },
+    {
+      "name": "10. Симуляция условий (конструктор)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "url": "{{base_url}}/applications/{{app_id}}/simulate",
+        "body": { "mode": "raw", "raw": "{\"amount\":700000,\"term_months\":24,\"collateral_offered\":true,\"guarantor_offered\":true}" }
+      }
+    },
+    {
+      "name": "11. Банк: вход",
+      "event": [
+        { "listen": "test", "script": { "exec": [
+          "pm.collectionVariables.set('bank_token', pm.response.json().access_token);"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{base_url}}/auth/login",
+        "body": { "mode": "raw", "raw": "{\"email\":\"underwriter@bank.ru\",\"password\":\"bank123\"}" }
+      }
+    },
+    {
+      "name": "12. Копилот андеррайтера",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{bank_token}}" }], "url": "{{base_url}}/applications/{{app_id}}/copilot" }
+    },
+    {
+      "name": "13. Консоль: активная политика",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{bank_token}}" }], "url": "{{base_url}}/policies/active" }
+    },
+    {
+      "name": "14. Консоль: симуляция политики на истории",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{bank_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "url": "{{base_url}}/policies/simulate",
+        "body": { "mode": "raw", "raw": "{\"yaml_text\":\"name: тест\\nscore_bands:\\n  approve_min: 60\\n  counter_min: 35\\ncounter_offer:\\n  amount_factor: 0.6\\n  rate_add: 4.0\\n  collateral_above: 3000000\\naffordability:\\n  max_payment_to_revenue: 0.4\",\"limit\":50}" }
+      }
+    },
+    {
+      "name": "15. Сопровождение (после выдачи)",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{base_url}}/applications/{{app_id}}/servicing" }
+    },
+    {
+      "name": "16. What-if прогноз сопровождения",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "url": "{{base_url}}/applications/{{app_id}}/servicing/forecast",
+        "body": { "mode": "raw", "raw": "{\"revenue_drop_pct\":45,\"extra_expense\":0}" }
+      }
+    },
+    {
+      "name": "17. Настроить автопилот",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "url": "{{base_url}}/applications/{{app_id}}/servicing/autopilot",
+        "body": { "mode": "raw", "raw": "{\"enabled\":true,\"max_bridge\":100000}" }
+      }
+    },
+    {
+      "name": "18. Запустить автопилот",
+      "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{base_url}}/applications/{{app_id}}/servicing/autopilot/run" }
+    },
+    {
+      "name": "19. Персональные предложения",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{base_url}}/applications/{{app_id}}/offers" }
+    },
+    {
+      "name": "20. Портфель: ранние предупреждения",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{bank_token}}" }], "url": "{{base_url}}/portfolio/early-warnings" }
+    },
+    {
+      "name": "21. Портфель: метрики эффекта",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{bank_token}}" }], "url": "{{base_url}}/portfolio/metrics" }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+React / React DOM 19.0.0 — Meta Platforms, Inc. and affiliates — MIT.
+TypeScript 5.7.2 — Microsoft Corporation — Apache-2.0.
+Vite 6.0.5 — Evan You and Vite contributors — MIT.
+Lucide React 0.468.0 — Lucide contributors — ISC; Feather-derived icons — MIT.
+Manrope — Mikhail Sharanda / Mirko Velimirovic — SIL Open Font License 1.1; delivered by Google Fonts.
+Transitive dependency versions are fixed in pnpm-lock.yaml; their licenses remain with the packages.
+Node.js and Nginx are used by the optional Docker configuration and retain their upstream licenses.
+Alfa-Bank name and visual identity belong to their respective owner. This is an unofficial hackathon prototype.
+Source case: user-provided Alfa Hack / Changellenge PDF. Research screenshots provided by the user.
+All business profile data in the walkthrough and fixture are synthetic.
+No bank, FNS, credit bureau, messaging, scoring, signing, or payment integration is connected.
+Application status, approval, document requests and disbursement are explicit local simulations.
+
+shadcn/ui — Copyright (c) 2023 shadcn — MIT. Dialog, dropdown menu and tooltip structures adapted to local CSS. Full notice: docs/licenses/shadcn-ui.txt.
+Radix UI React Dialog 1.3.1, Dropdown Menu 2.2.1, Tabs 1.2.1, Tooltip 1.4.1 — WorkOS — MIT. Full notice: docs/licenses/radix-ui.txt.
+Motion 14.5.0 — Motion B.V. — MIT. Full notice: docs/licenses/motion.txt.
+@animate-ui/react 2.0.0 — Copyright (c) 2025 Elliot Sutton — MIT + Commons Clause License Condition. Used inside this application for CountingNumber; components are not distributed as a standalone library. Full notice: docs/licenses/animate-ui.txt.
+Fluid Functionalism (https://www.fluidfunctionalism.com/docs/tabs) provided design inspiration for the original scenario indicator; no Fluid source copied or package installed.
+Badtz UI was evaluated as a reference; no Badtz source or package is included.
