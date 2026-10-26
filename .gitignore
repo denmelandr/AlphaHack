@@ -1,0 +1,15 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.agents/
+.aws/
+.codex/
+fixtures/
+
+.env
+__pycache__/
+.pytest_cache/
+uploads/
+
+# Preserved original backend Git metadata
+.source-git/

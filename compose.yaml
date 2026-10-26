@@ -1,0 +1,106 @@
+name: alfa-credit
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-conveyor}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-conveyor}
+      POSTGRES_DB: ${POSTGRES_DB:-conveyor}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-conveyor}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Объектное хранилище для документов добавляется на этапе загрузки документов
+  # (Фаза работы с документами). До тех пор файлы хранятся на локальном томе
+  # backend. MinIO включается здесь же, когда дойдём до этого этапа.
+  # minio:
+  #   image: minio/minio
+  #   command: server /data --console-address ":9001"
+  #   environment:
+  #     MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+  #     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+  #   ports:
+  #     - "9000:9000"
+  #     - "9001:9001"
+  #   volumes:
+  #     - miniodata:/data
+
+  # Опционально: LLM для копилота андеррайтера (модель с открытыми весами).
+  # Раскомментируйте, затем: docker compose exec ollama ollama pull qwen2.5:7b-instruct
+  # и выставьте LLM_ENABLED=true. Без этого копилот работает в шаблонном режиме.
+  # ollama:
+  #   image: ollama/ollama
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollamadata:/root/.ollama
+
+  integrations-mock:
+    build: ./credit-conveyor/integrations-mock
+    ports:
+      - "127.0.0.1:8001:8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./credit-conveyor/backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-conveyor}:${POSTGRES_PASSWORD:-conveyor}@postgres:5432/${POSTGRES_DB:-conveyor}
+      REDIS_URL: redis://redis:6379/0
+      BANK_INVITATION_CODE: ${BANK_INVITATION_CODE:-}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+      INTEGRATIONS_URL: http://integrations-mock:8001
+      CORS_ORIGINS: http://localhost:5173
+      # Копилот: по умолчанию шаблонный режим. Для LLM поднимите сервис ollama
+      # ниже, включите LLM_ENABLED=true и задайте модель с открытыми весами.
+      LLM_ENABLED: ${LLM_ENABLED:-false}
+      OLLAMA_URL: http://ollama:11434
+      LLM_MODEL: ${LLM_MODEL:-qwen2.5:7b-instruct}
+    volumes:
+      - uploads:/app/uploads
+    ports:
+      - "127.0.0.1:8080:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      integrations-mock:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+  frontend:
+    build: .
+    ports:
+      - "127.0.0.1:5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  uploads:
+  pgdata:
