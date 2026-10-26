@@ -130,7 +130,7 @@ docker compose exec -T backend python -m pytest -q
 | Компоненты, модели, лицензии и моки | [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) |
 | Чек-лист сдачи | [SUBMISSION.md](SUBMISSION.md) |
 
-Быстрая проверка после запуска: `bash scripts/verify_submission.sh`. Проверка контракта и коллекции: `python3 scripts/check_contract.py`. Полный прогон коллекции создаёт одну синтетическую заявку: `python3 scripts/run_collection.py`. Эти скрипты используют стандартную библиотеку Python и не требуют Newman. Postman также может импортировать коллекцию напрямую.
+Быстрая проверка после запуска: `bash scripts/verify_submission.sh`. По умолчанию она использует API `http://localhost:8080` и frontend `http://localhost:5173`; для изолированного запуска задайте `API_BASE_URL` и `FRONTEND_BASE_URL`. Проверка контракта и коллекции: `python3 scripts/check_contract.py`. Полный прогон коллекции создаёт одну синтетическую заявку: `python3 scripts/run_collection.py`. Эти скрипты используют стандартную библиотеку Python и не требуют Newman. Postman также может импортировать коллекцию напрямую.
 
 Frontend unit-тесты покрывают расчёты и отдельные функции, API-тесты — серверные сценарии. Автоматического браузерного E2E-набора пока нет; ручной сценарий описан отдельно. GitHub Actions запускает сборку и тесты из корня репозитория.
 

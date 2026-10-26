@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { api } from '../api/client';
 import type { Session } from '../auth/model';
-export type Terms = { amount: number; rate: number; months: number; profit: number; delay: number; purpose: string; productId?: number };
+export type Terms = { amount: number | ''; rate: number; months: number; profit: number | ''; delay: number; purpose: string; productId?: number };
 export type Product = { id: number; code: string; name: string; description: string; kind: string; min_amount: number; max_amount: number; min_term: number; max_term: number; base_rate: number };
 export type Application = { id: number; company_id: number; amount: number; term_months: number; purpose: string; state: string; product_id: number; form_data: Record<string, any>; created_at: string; updated_at: string; events?: any[]; available_events?: string[]; enrichment?: any; score?: any; decision?: any; offer?: any };
 export const stateNames: Record<string,string> = { DRAFT:'Черновик',SUBMITTED:'Заявка отправлена',VALIDATION:'Проверка данных',ENRICHMENT:'Обогащение',SCORING:'Скоринг',DECISIONING:'Принятие решения',OFFER:'Предложены условия',NEEDS_INFO:'Нужны сведения',MANUAL_REVIEW:'Пересмотр человеком',DECLINED:'Отказ',OFFER_ACCEPTED:'Условия приняты',SIGNING:'Подписание',DISBURSED:'Выдача',SERVICING:'Сопровождение' };
@@ -13,7 +13,7 @@ function useConveyorState(session: Session) {
   const [selectedId,setSelectedId]=useState<number|null>(()=>Number(sessionStorage.getItem(`alfa-selected:${session.id}`))||null);
   const [detail,setDetail]=useState<Application|null>(null),[documents,setDocuments]=useState<any[]>([]),[readiness,setReadiness]=useState<any>(null),[servicing,setServicing]=useState<any>(null),[offers,setOffers]=useState<any>(null);
   const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[revision,setRevision]=useState(0);
-  const [terms,setTerms]=useState<Terms>({amount:1000000,rate:22,months:24,profit:95000,delay:0,purpose:'Развитие бизнеса'});
+  const [terms,setTerms]=useState<Terms>({amount:'',rate:22,months:24,profit:'',delay:0,purpose:'Развитие бизнеса'});
   const lastSelected=useRef<number|null>(null);
   const sequence=useRef(0),mounted=useRef(true),actionLock=useRef(false);
   const isBank=session.role!=='client',isClient=session.role!=='bank',isRisk=session.serverRole==='risk_admin'||session.role==='demo';
