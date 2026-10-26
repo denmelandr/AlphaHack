@@ -1,0 +1,40 @@
+name: Verify submission
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.11.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - name: Frontend install, tests and build
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm test
+          pnpm build
+      - name: Docker build and startup
+        run: |
+          docker compose config --quiet
+          docker compose up --build --wait --wait-timeout 180 -d
+      - name: Validate submission and run backend tests
+        run: bash scripts/verify_submission.sh
+      - name: Run API collection
+        run: python3 scripts/run_collection.py
+      - name: Container logs on failure
+        if: failure()
+        run: docker compose logs --tail 100
+      - name: Cleanup
+        if: always()
+        run: docker compose down -v

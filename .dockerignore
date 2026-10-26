@@ -1,4 +1,13 @@
 node_modules
 dist
 .git
+.source-git
+.env
+.agents
+.aws
+.codex
+fixtures
+**/__pycache__
+**/.pytest_cache
+**/uploads
 *.tsbuildinfo
