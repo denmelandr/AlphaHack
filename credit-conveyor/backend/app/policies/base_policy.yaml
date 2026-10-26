@@ -1,0 +1,74 @@
+# Базовая кредитная политика (policy-as-code).
+# Версионируется, редактируется в консоли банка, прогоняется в симуляции.
+name: "Базовая кредитная политика"
+
+# Жёсткие стоп-факторы: при срабатывании любого — отказ, балл не смотрим.
+hard_declines:
+  - field: company_status
+    op: not_equals
+    value: active
+    reason: "Компания не действует по данным ЕГРЮЛ"
+  - field: account_blocked
+    op: equals
+    value: true
+    reason: "Расчётный счёт заблокирован (ФНС)"
+  - field: disqualified_persons
+    op: equals
+    value: true
+    reason: "В компании есть дисквалифицированные лица"
+  - field: max_overdue_days
+    op: gte
+    value: 90
+    reason: "Просрочка 90+ дней в кредитной истории"
+
+# Если критичный источник недоступен — запрашиваем данные, а не отказываем.
+require_sources: [bki]
+
+# Пороги по баллу кредитоспособности (0..100).
+score_bands:
+  approve_min: 70   # >= 70 — одобрение на запрошенных условиях
+  counter_min: 45   # 45..69 — контрпредложение; < 45 — отказ
+
+# Контрпредложение: как корректируем условия.
+counter_offer:
+  amount_factor: 0.6          # предлагаем долю запрошенной суммы
+  rate_add: 4.0               # надбавка к ставке, п.п.
+  collateral_above: 3000000   # при сумме выше — требуется залог
+
+# Доступность: платёж не должен превышать долю средней выручки.
+affordability:
+  max_payment_to_revenue: 0.4
+
+# Ковенанты сопровождения: условия, которые должны выполняться по выданному
+# кредиту. Нарушение поднимает раннее предупреждение в портфельной очереди банка.
+covenants:
+  - code: account_active
+    metric: account_blocked
+    op: equals
+    value: false
+    severity: high
+    reason: "Расчётный счёт заблокирован (ФНС)"
+  - code: no_cashgap
+    metric: forecast_gap
+    op: equals
+    value: false
+    severity: high
+    reason: "Прогноз кассового разрыва в ближайшие 60 дней"
+  - code: payment_load
+    metric: payment_to_revenue
+    op: lte
+    value: 0.5
+    severity: medium
+    reason: "Платёж превышает половину выручки"
+  - code: revenue_trend
+    metric: revenue_declining
+    op: equals
+    value: false
+    severity: medium
+    reason: "Выручка по ОФД снижается"
+  - code: resilience
+    metric: resilience_pct
+    op: gte
+    value: 25
+    severity: medium
+    reason: "Низкий запас прочности: разрыв уже при небольшом падении выручки"
